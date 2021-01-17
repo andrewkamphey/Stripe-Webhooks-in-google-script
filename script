@@ -1,0 +1,38 @@
+function doPost(e) {
+
+    var jsonString = e.postData.getDataAsString();
+    var event = JSON.parse(jsonString)
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("XXX");
+    var timeStamp = new Date();
+    var time = Utilities.formatDate(timeStamp, "GMT+08:00", "MM/dd/yy, h:mm a");
+    var lastRow = sheet.getLastRow();
+    var getHookType = event["type"];
+    
+switch (getHookType)  {
+  case "customer.created":
+    var hookType = "New Customer"
+    var customerId = event["data"].object.id;
+    var customerEmail = event["data"].object.email;
+    break;
+  case "customer.subscription.created":       
+    var hookType = "New Paid Subscriber";
+    var customerId = event["data"].object.customer;
+    break;
+  case "charge.succeeded":
+    var hookType = "Payment";
+    var customerId = event["data"].object.customer;
+    break;
+  case "subscription_schedule.canceled":
+    var hookType = "Cancelled";
+    var customerId = event["data"].object.customer;
+    }
+    //Insert the data into the sheet  
+    sheet.getRange(lastRow + 1, 1).setValue(time); 
+    sheet.getRange(lastRow + 1, 2).setValue(hookType); 
+    sheet.getRange(lastRow + 1, 3).setValue(event["data"]);   
+    sheet.getRange(lastRow + 1, 4).setValue(customerEmail);
+    sheet.getRange(lastRow + 1, 5).setValue(customerId);
+
+  return HtmlService.createHtmlOutput(200);
+}
